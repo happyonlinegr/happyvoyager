@@ -230,7 +230,7 @@ trait Translatable
 
         foreach ($locales as $locale) {
             if (empty($translations[$locale])) {
-                continue;
+                $translations[$locale] = '';
             }
 
             if ($locale == $default) {
