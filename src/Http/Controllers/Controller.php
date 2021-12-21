@@ -102,8 +102,6 @@ abstract class Controller extends BaseController
                     $new_content = $new_content->sortBy('sort');
                     $content = json_encode($new_content);
                 }
-                // dump($new_content, $old_content);
-                // dd($content);
             }
             
             if ($row->type == 'multiple_text') {
@@ -125,7 +123,6 @@ abstract class Controller extends BaseController
                 // If the multiple_images upload is null and it has a current image keep the current image
                 if ($row->type == 'multiple_images_with_sort' && is_null($request->input($row->field)) && isset($data->{$row->field})) {
                     $content = $data->{$row->field};
-                    // dump('BBB');
                 }
 
                 // If the file upload is null and it has a current file keep the current file
@@ -164,9 +161,6 @@ abstract class Controller extends BaseController
                 }
             }
         }
-
-        // dump($data);
-        // dd('After');
 
         $data->save();
 
@@ -291,6 +285,9 @@ abstract class Controller extends BaseController
             /********** FILE TYPE **********/
             case 'file':
                 return (new File($request, $slug, $row, $options))->handle();
+            /********** MULTIPLE TEXT **********/
+            case 'multiple_text':
+                return (new MultipleText($request, $slug, $row, $options))->handle();
             /********** MULTIPLE IMAGES TYPE **********/
             case 'multiple_images':
                 return (new MultipleImage($request, $slug, $row, $options))->handle();

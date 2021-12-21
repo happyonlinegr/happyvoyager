@@ -94,7 +94,14 @@
 
                         <div class="panel-footer">
                             @section('submit-buttons')
-                                <button type="submit" class="btn btn-primary save">{{ __('voyager::generic.save') }}</button>
+                                <div class="m-3 text-right">
+                                    @if(isset($dataTypeContent->id))
+                                        <input type="hidden" id="save_and_stay" name="save_and_stay" value="0" />
+                                        <button type="submit" onclick="$('#save_and_stay').val(1);" class="btn btn-success mr-2">{{ __('voyager::generic.save_stay') }}</button>
+                                    @endif
+                                    <button type="submit" class="btn btn-primary save">{{ __('voyager::generic.save') }}</button>
+                                    <div class="clearfix"></div>
+                                </div>
                             @stop
                             @yield('submit-buttons')
                         </div>

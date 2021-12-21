@@ -53,7 +53,6 @@ class Translator implements ArrayAccess, JsonSerializable
      */
     public function save()
     {
-        // dump($this->attributes);
         $attributes = $this->getModifiedAttributes();
         $savings = [];
 
@@ -87,7 +86,6 @@ class Translator implements ArrayAccess, JsonSerializable
             $this->attributes[$key]['modified'] = false;
         }
 
-        // dd('stop');
         return in_array(false, $savings);
     }
 
