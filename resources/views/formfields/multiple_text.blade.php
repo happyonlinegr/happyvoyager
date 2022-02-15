@@ -110,10 +110,12 @@
                 setTimeout(() => {
                     let multiple_data = JSON.parse($('#{{ $row->field }}').val());
                     
-                    for (let index = 0; index < multiple_data.length; index++) {
-                        $('#{{ $row->field }}_loop_fields .btn-add').click();
-                        $('#{{ $row->field }}_loop_fields .loop-wrap .loop-parameter-group').eq(index).find('.fake_title').val(multiple_data[index].title);
-                        $('#{{ $row->field }}_loop_fields .loop-wrap .loop-parameter-group').eq(index).find('.fake_content').val(multiple_data[index].content);
+                    if(multiple_data){
+                        for (let index = 0; index < multiple_data.length; index++) {
+                            $('#{{ $row->field }}_loop_fields .btn-add').click();
+                            $('#{{ $row->field }}_loop_fields .loop-wrap .loop-parameter-group').eq(index).find('.fake_title').val(multiple_data[index].title);
+                            $('#{{ $row->field }}_loop_fields .loop-wrap .loop-parameter-group').eq(index).find('.fake_content').val(multiple_data[index].content);
+                        }
                     }
                     
                     multiple_{{ $row->id }}.reload_real_input();
