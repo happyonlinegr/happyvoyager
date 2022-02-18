@@ -120,7 +120,6 @@
                     
                     multiple_{{ $row->id }}.reload_real_input();
                 }, 200);
-                
             }
         };
 
@@ -136,4 +135,4 @@
             multiple_{{ $row->id }}.update_fake_inputs();
         });
     </script>
-@endsection
+@append
