@@ -317,6 +317,7 @@ class VoyagerServiceProvider extends ServiceProvider
             'multiple_images',
             'multiple_images_with_sort',
             'multiple_text',
+            'dynamic_row',
             'media_picker',
             'number',
             'password',

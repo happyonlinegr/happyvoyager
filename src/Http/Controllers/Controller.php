@@ -16,6 +16,7 @@ use TCG\Voyager\Http\Controllers\ContentTypes\Image as ContentImage;
 use TCG\Voyager\Http\Controllers\ContentTypes\MultipleCheckbox;
 use TCG\Voyager\Http\Controllers\ContentTypes\MultipleImage;
 use TCG\Voyager\Http\Controllers\ContentTypes\MultipleText;
+use TCG\Voyager\Http\Controllers\ContentTypes\DynamicRow;
 use TCG\Voyager\Http\Controllers\ContentTypes\Password;
 use TCG\Voyager\Http\Controllers\ContentTypes\Relationship;
 use TCG\Voyager\Http\Controllers\ContentTypes\SelectMultiple;
@@ -106,6 +107,10 @@ abstract class Controller extends BaseController
             }
             
             if ($row->type == 'multiple_text') {
+                $content = json_encode($content);
+            }
+
+            if ($row->type == 'dynamic_row') {
                 $content = json_encode($content);
             }
 
@@ -289,6 +294,9 @@ abstract class Controller extends BaseController
             /********** MULTIPLE TEXT **********/
             case 'multiple_text':
                 return (new MultipleText($request, $slug, $row, $options))->handle();
+            /********** DYNAMIC ROW **********/
+            case 'dynamic_row':
+                return (new DynamicRow($request, $slug, $row, $options))->handle();
             /********** MULTIPLE IMAGES TYPE **********/
             case 'multiple_images':
                 return (new MultipleImage($request, $slug, $row, $options))->handle();
