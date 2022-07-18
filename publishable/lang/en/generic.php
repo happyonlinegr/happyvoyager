@@ -82,6 +82,7 @@ return [
     'return_to_list'         => 'Return to List',
     'route'                  => 'Route',
     'save'                   => 'Save',
+    'save_stay'              => 'Save & Stay',
     'search'                 => 'Search',
     'select_all'             => 'Select All',
     'select_group'           => 'Select Existing Group or Add New',
