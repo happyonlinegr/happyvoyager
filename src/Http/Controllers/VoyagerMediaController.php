@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
-use League\Flysystem\Plugin\ListWith;
 use TCG\Voyager\Events\MediaFileAdded;
 use TCG\Voyager\Facades\Voyager;
 
@@ -54,13 +53,18 @@ class VoyagerMediaController extends Controller
         $dir = $this->directory.$folder;
 
         $files = [];
-        $storage = Storage::disk($this->filesystem)->addPlugin(new ListWith());
-        $storageItems = $storage->listWith(['mimetype'], $dir);
+        if (class_exists(\League\Flysystem\Plugin\ListWith::class)) {
+            $storage = Storage::disk($this->filesystem)->addPlugin(new \League\Flysystem\Plugin\ListWith());
+            $storageItems = $storage->listWith(['mimetype'], $dir);
+        } else {
+            $storage = Storage::disk($this->filesystem);
+            $storageItems = $storage->listContents($dir)->sortByPath()->toArray();
+        }
 
         foreach ($storageItems as $item) {
             if ($item['type'] == 'dir') {
                 $files[] = [
-                    'name'          => $item['basename'],
+                    'name'          => $item['basename'] ?? basename($item['path']),
                     'type'          => 'folder',
                     'path'          => Storage::disk($this->filesystem)->url($item['path']),
                     'relative_path' => $item['path'],
@@ -72,18 +76,22 @@ class VoyagerMediaController extends Controller
                     continue;
                 }
                 // Its a thumbnail and thumbnails should be hidden
-                if (Str::endsWith($item['filename'], $thumbnail_names)) {
+                if (Str::endsWith($item['path'], $thumbnail_names)) {
                     $thumbnails[] = $item;
                     continue;
                 }
+                $mime = 'file';
+                if (class_exists(\League\MimeTypeDetection\ExtensionMimeTypeDetector::class)) {
+                    $mime = (new \League\MimeTypeDetection\ExtensionMimeTypeDetector())->detectMimeTypeFromFile($item['path']);
+                }
                 $files[] = [
-                    'name'          => $item['basename'],
-                    'filename'      => $item['filename'],
-                    'type'          => $item['mimetype'] ?? 'file',
+                    'name'          => $item['basename'] ?? basename($item['path']),
+                    'filename'      => $item['filename'] ?? basename($item['path'], '.'.pathinfo($item['path'])['extension']),
+                    'type'          => $item['mimetype'] ?? $mime,
                     'path'          => Storage::disk($this->filesystem)->url($item['path']),
                     'relative_path' => $item['path'],
-                    'size'          => $item['size'],
-                    'last_modified' => $item['timestamp'],
+                    'size'          => $item['size'] ?? $item->fileSize(),
+                    'last_modified' => $item['timestamp'] ?? $item->lastModified(),
                     'thumbnails'    => [],
                 ];
             }
@@ -220,7 +228,7 @@ class VoyagerMediaController extends Controller
         $absolute_path = Storage::disk($this->filesystem)->path($request->upload_path);
 
         try {
-            $realPath = Storage::disk($this->filesystem)->getDriver()->getAdapter()->getPathPrefix();
+            $realPath = Storage::disk($this->filesystem)->path('/');
 
             $allowedMimeTypes = config('voyager.media.allowed_mimetypes', '*');
             if ($allowedMimeTypes != '*' && (is_array($allowedMimeTypes) && !in_array($request->file->getMimeType(), $allowedMimeTypes))) {
@@ -246,6 +254,7 @@ class VoyagerMediaController extends Controller
             }
 
             $file = $request->file->storeAs($request->upload_path, $name.'.'.$extension, $this->filesystem);
+            $file = preg_replace('#/+#', '/', $file);
 
             $imageMimeTypes = [
                 'image/jpeg',
@@ -255,7 +264,8 @@ class VoyagerMediaController extends Controller
                 'image/svg+xml',
             ];
             if (in_array($request->file->getMimeType(), $imageMimeTypes)) {
-                $image = Image::make($realPath.$file);
+                $content = Storage::disk($this->filesystem)->get($file);
+                $image = Image::make($content);
 
                 if ($request->file->getClientOriginalExtension() == 'gif') {
                     copy($request->file->getRealPath(), $realPath.$file);
@@ -272,7 +282,8 @@ class VoyagerMediaController extends Controller
                                     ($thumbnail_data->height ?? null),
                                     function ($constraint) {
                                         $constraint->aspectRatio();
-                                    }, ($thumbnail_data->position ?? 'center')
+                                    },
+                                    ($thumbnail_data->position ?? 'center')
                                 );
                             } elseif ($type == 'crop') {
                                 $thumbnail = $thumbnail->crop(
@@ -301,14 +312,15 @@ class VoyagerMediaController extends Controller
                             ) {
                                 $thumbnail = $this->addWatermarkToImage($thumbnail, $details->watermark);
                             }
-                            $thumbnail->save($realPath.$request->upload_path.$name.'-'.($thumbnail_data->name ?? 'thumbnail').'.'.$extension, ($details->quality ?? 90));
+                            $thumbnail_file = $request->upload_path.$name.'-'.($thumbnail_data->name ?? 'thumbnail').'.'.$extension;
+                            Storage::disk($this->filesystem)->put($thumbnail_file, $thumbnail->encode($extension, ($details->quality ?? 90))->encoded);
                         }
                     }
                     // Add watermark to image
                     if (property_exists($details, 'watermark') && property_exists($details->watermark, 'source')) {
                         $image = $this->addWatermarkToImage($image, $details->watermark);
                     }
-                    $image->save($realPath.$file, ($details->quality ?? 90));
+                    Storage::disk($this->filesystem)->put($file, $image->encode($extension, ($details->quality ?? 90))->encoded);
                 }
             }
 

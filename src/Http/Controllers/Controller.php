@@ -6,6 +6,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Storage;
 use TCG\Voyager\Events\FileDeleted;
@@ -344,7 +345,7 @@ abstract class Controller extends BaseController
 
     public function deleteFileIfExists($path)
     {
-        if (Storage::disk(config('voyager.storage.disk'))->exists($path)) {
+        if ($path && Storage::disk(config('voyager.storage.disk'))->exists($path)) {
             Storage::disk(config('voyager.storage.disk'))->delete($path);
             event(new FileDeleted($path));
         }

@@ -42,7 +42,7 @@ return [
     */
 
     'models' => [
-        //'namespace' => 'App\\',
+        // 'namespace' => 'App\\Models\\',
     ],
 
     /*
@@ -55,7 +55,7 @@ return [
     */
 
     'storage' => [
-        'disk' => env('FILESYSTEM_DRIVER', 'public'),
+        'disk' => 'public',
     ],
 
     /*
@@ -111,7 +111,7 @@ return [
          */
         'locales' => [
             'en',
-            //'pt',
+            //'el',
         ],
     ],
 
@@ -181,7 +181,7 @@ return [
     |
     */
 
-    'primary_color' => '#22A7F0',
+    'primary_color' => '#000000',
 
     'show_dev_tips' => true, // Show development tip "How To Use:" in Menu and Settings
 

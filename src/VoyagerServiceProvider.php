@@ -6,6 +6,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +17,6 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use Intervention\Image\ImageServiceProvider;
 use Larapack\DoctrineSupport\DoctrineSupportServiceProvider;
-use Larapack\VoyagerHooks\VoyagerHooksServiceProvider;
 use TCG\Voyager\Events\FormFieldsRegistered;
 use TCG\Voyager\Facades\Voyager as VoyagerFacade;
 use TCG\Voyager\FormFields\After\DescriptionHandler;
@@ -59,7 +59,6 @@ class VoyagerServiceProvider extends ServiceProvider
         $this->app->register(VoyagerEventServiceProvider::class);
         $this->app->register(ImageServiceProvider::class);
         $this->app->register(VoyagerDummyServiceProvider::class);
-        $this->app->register(VoyagerHooksServiceProvider::class);
         $this->app->register(DoctrineSupportServiceProvider::class);
 
         $loader = AliasLoader::getInstance();
@@ -131,6 +130,10 @@ class VoyagerServiceProvider extends ServiceProvider
         });
 
         $this->bootTranslatorCollectionMacros();
+
+        if (method_exists('Paginator', 'useBootstrap')) {
+            Paginator::useBootstrap();
+        }
     }
 
     /**
